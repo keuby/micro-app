@@ -23,7 +23,7 @@ start (options?: {
     error?(e?: CustomEvent): void
   },
   // 预加载，支持数组或函数
-  preFetchApps?: Array<{ 
+  preFetchApps?: Array<{
     name: string,
     url: string,
     disableScopecss?: boolean,
@@ -46,8 +46,10 @@ start (options?: {
       escapeProperties?: string[],
       // 可选，传递给loader的配置项
       options?: any,
-      // 必填，js处理函数，必须返回code值
-      loader?: (code: string, url: string, options: any, info: sourceScriptInfo) => string
+      // 可选，js处理函数，必须返回 code 值
+      loader?: (code: string, url: string, options: any, info: sourceScriptInfo) => string,
+      // 可选，html 处理函数，必须返回 code 值
+      processHtml?: (code: string, url: string, options: unknown, app: AppInterface) => string
     }>
 
     // 子应用插件
@@ -61,7 +63,9 @@ start (options?: {
         // 可选，传递给loader的配置项
         options?: any,
         // 必填，js处理函数，必须返回code值
-        loader?: (code: string, url: string, options: any, info: sourceScriptInfo) => string
+        loader?: (code: string, url: string, options: any, info: sourceScriptInfo) => string,
+        // 可选，html 处理函数，必须返回 code 值
+        processHtml?: (code: string, url: string, options: unknown, app: AppInterface) => string
       }>
     }
   },
@@ -223,7 +227,7 @@ interface unmountAppParams {
    * 对于已经卸载的应用: 当子应用已经卸载或keep-alive应用已经推入后台，则清除应用状态及缓存资源
    * 对于正在运行的应用: 当子应用正在运行，则卸载应用并删除状态及缓存资源
    */
-  destroy?: boolean; 
+  destroy?: boolean;
   /**
    * clearAliveState: 是否清空应用的缓存状态，默认值：false
    * 解释: 如果子应用是keep-alive，则卸载并清空状态，并保留缓存资源，如果子应用不是keep-alive，则执行正常卸载流程，并保留缓存资源
@@ -265,7 +269,7 @@ interface unmountAppParams {
    * 对于已经卸载的应用: 当子应用已经卸载或keep-alive应用已经推入后台，则清除应用状态及缓存资源
    * 对于正在运行的应用: 当子应用正在运行，则卸载应用并删除状态及缓存资源
    */
-  destroy?: boolean; 
+  destroy?: boolean;
   /**
    * clearAliveState: 是否清空应用的缓存状态，默认值：false
    * 解释: 如果子应用是keep-alive，则卸载并清空状态，并保留缓存资源，如果子应用不是keep-alive，则执行正常卸载流程，并保留缓存资源
@@ -452,7 +456,7 @@ microApp.setGlobalData({type: '全局数据'})
 ```
 
 
-<!-- 
+<!--
   ---------------------------------------------------------------------
   -------------------------------  分割线  -----------------------------
   ---------------------------------------------------------------------

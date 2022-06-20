@@ -20,9 +20,11 @@ microApp.start({
       // 可选，传递给loader的配置项
       options?: any,
       // 必填，js处理函数，必须返回code值
-      loader?: (code: string, url: string, options: any, info: sourceScriptInfo) => code 
+      loader?: (code: string, url: string, options: any, info: sourceScriptInfo) => code,
+      // 可选，html 处理函数，必须返回 code 值
+      processHtml?: (code: string, url: string, options: unknown, app: AppInterface) => string
     }>
-  
+
     // 子应用插件
     modules?: {
       // appName为应用的名称，这些插件只会作用于指定的应用
@@ -33,8 +35,10 @@ microApp.start({
         escapeProperties?: string[],
         // 可选，传递给loader的配置项
         options?: any,
-        // 必填，js处理函数，必须返回code值
-        loader?: (code: string, url: string, options: any, info: sourceScriptInfo) => code 
+        // 可选，js处理函数，必须返回code值
+        loader?: (code: string, url: string, options: any, info: sourceScriptInfo) => code,
+        // 可选，html 处理函数，必须返回 code 值
+        processHtml?: (code: string, url: string, options: unknown, app: AppInterface) => string
       }>
     }
   }
@@ -52,10 +56,14 @@ microApp.start({
         scopeProperties: ['key', 'key', ...], // 可选
         escapeProperties: ['key', 'key', ...], // 可选
         options: 配置项, // 可选
-        loader(code, url, options, info) { // 必填
+        loader(code, url, options, info) { // 可选
           console.log('全局插件')
           return code
-        }
+        },
+        processHtml(code, url, options, info) { // 可选
+          console.log('每个子应用 HTML 都会传入')
+          return code
+        },
       }
     ],
     modules: {
@@ -71,10 +79,14 @@ microApp.start({
         scopeProperties: ['key', 'key', ...], // 可选
         escapeProperties: ['key', 'key', ...], // 可选
         options: 配置项, // 可选
-        loader(code, url, options, info) { // 必填
+        loader(code, url, options, info) { // 可选
           console.log('只适用于appName2的插件')
           return code
-        }
+        },
+        processHtml(code, url, options, info) { // 可选
+          console.log('只适用于 appName2 的 HTML 处理')
+          return code
+        },
       }]
     }
   }
