@@ -19,6 +19,34 @@ describe('source index', () => {
       globalAssets: {
         js: 'xx' as any,
         css: 'xx' as any,
+      },
+      plugins: {
+        global: [
+          {
+            processHtml (code, _url, _options) {
+              // console.log('全局插件', _url)
+              return code
+            }
+          },
+          {
+            processHtml: 'invalid processHtml' as any,
+          },
+        ],
+        modules: {
+          'test-app8': [
+            {
+              processHtml (code, _url, _options) {
+                return code.replace('app', 'app-replaced')
+              }
+            }
+          ],
+          'test-app3': [
+            {
+              processHtml: 'invalid loader' as any,
+            }
+          ],
+          'test-app4': 'invalid plugin' as any,
+        }
       }
     })
     appCon = document.querySelector('#app-container')!
@@ -137,6 +165,23 @@ describe('source index', () => {
         expect(console.error).toHaveBeenLastCalledWith('[micro-app] app test-app7: html is empty, please check in detail')
         resolve(true)
       }, 100)
+    })
+  })
+
+  // 会执行 processHtml 函数
+  test('executor processHtml plugin', async () => {
+    const microAppElement8 = document.createElement('micro-app')
+    microAppElement8.setAttribute('name', 'test-app8')
+    microAppElement8.setAttribute('url', `http://127.0.0.1:${ports.source_index}/special-html/process-html.html`)
+
+    appCon.appendChild(microAppElement8)
+    await new Promise((resolve) => {
+      microAppElement8.addEventListener('mounted', () => {
+        expect(document.getElementById('app-replaced')).toBeTruthy()
+        resolve(true)
+      }, false)
+
+      appCon.appendChild(microAppElement8)
     })
   })
 })
