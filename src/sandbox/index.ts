@@ -56,6 +56,15 @@ const escapeSetterKeyList: PropertyKey[] = [
 
 const globalPropertyList: Array<PropertyKey> = ['window', 'self', 'globalThis']
 
+function createProxyWindowProperty (rawValue: object, appName: string) {
+  return new Proxy(rawValue, {
+    get (target, key: PropertyKey, receiver) {
+      throttleDeferForSetAppName(appName)
+      return Reflect.get(target, key, receiver)
+    }
+  })
+}
+
 export default class SandBox implements SandBoxInterface {
   static activeCount = 0 // number of active sandbox
   private recordUmdEffect!: CallableFunction
@@ -192,7 +201,11 @@ export default class SandBox implements SandBoxInterface {
 
         const rawValue = Reflect.get(rawWindow, key)
 
-        return isFunction(rawValue) ? bindFunctionToRawWindow(rawWindow, rawValue) : rawValue
+        return isFunction(rawValue)
+          ? bindFunctionToRawWindow(rawWindow, rawValue)
+          : key === 'document'
+            ? createProxyWindowProperty(rawValue, appName)
+            : rawValue
       },
       set: (target: microAppWindowType, key: PropertyKey, value: unknown): boolean => {
         if (this.active) {
