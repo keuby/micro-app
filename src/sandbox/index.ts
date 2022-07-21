@@ -191,6 +191,12 @@ export default class SandBox implements SandBoxInterface {
     // window.xxx will trigger proxy
     return new Proxy(this.microAppWindow, {
       get: (target: microAppWindowType, key: PropertyKey): unknown => {
+        const rawValue = Reflect.get(rawWindow, key)
+
+        if (key === 'document') {
+          return createProxyWindowProperty(rawValue, appName)
+        }
+
         throttleDeferForSetAppName(appName)
 
         if (
@@ -199,13 +205,9 @@ export default class SandBox implements SandBoxInterface {
           this.scopeProperties.includes(key)
         ) return Reflect.get(target, key)
 
-        const rawValue = Reflect.get(rawWindow, key)
-
         return isFunction(rawValue)
           ? bindFunctionToRawWindow(rawWindow, rawValue)
-          : key === 'document'
-            ? createProxyWindowProperty(rawValue, appName)
-            : rawValue
+          : rawValue
       },
       set: (target: microAppWindowType, key: PropertyKey, value: unknown): boolean => {
         if (this.active) {
