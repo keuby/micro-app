@@ -21,8 +21,8 @@ import {
 } from './libs/utils'
 import dispatchLifecyclesEvent, { dispatchCustomEventToMicroApp } from './interact/lifecycles_event'
 import globalEnv from './libs/global_env'
-import { releasePatchSetAttribute } from './source/patch'
-import { getActiveApps } from './micro_app'
+// import { releasePatchSetAttribute } from './source/patch'
+// import { getActiveApps } from './micro_app'
 
 // micro app instances
 export const appInstanceMap = new Map<string, AppInterface>()
@@ -297,9 +297,9 @@ export default class CreateApp implements AppInterface {
 
     // this.container maybe contains micro-app element, stop sandbox should exec after cloneContainer
     this.sandBox?.stop(this.umdMode)
-    if (!getActiveApps().length) {
-      releasePatchSetAttribute()
-    }
+    // if (!getActiveApps().length) {
+    //   releasePatchSetAttribute()
+    // }
 
     // dispatch unmount event to base app
     dispatchLifecyclesEvent(
