@@ -2,9 +2,9 @@ import type {
   Func,
   AppInterface,
   sourceType,
-  WithSandBoxInterface,
   MountParam,
   UnmountParam,
+  SandBoxInterface,
 } from '@micro-app/types'
 import { HTMLLoader } from './source/loader/html'
 import { extractSourceDom } from './source/index'
@@ -64,7 +64,7 @@ export default class CreateApp implements AppInterface {
   public umdMode = false
   public source: sourceType
   // TODO: 类型优化，加上iframe沙箱
-  public sandBox: WithSandBoxInterface | null = null
+  public sandBox: SandBoxInterface | null = null
   public name: string
   public url: string
   public container: HTMLElement | ShadowRoot | null
@@ -532,7 +532,9 @@ export default class CreateApp implements AppInterface {
 
   // actions for completely destroy
   public actionsForCompletelyDestroy (): void {
-    this.sandBox?.deleteIframeElement?.()
+    if (this.sandBox?.type === 'iframe') {
+      this.sandBox.deleteIframeElement()
+    }
     sourceCenter.script.deleteInlineInfo(this.source.scripts)
     appInstanceMap.delete(this.name)
   }

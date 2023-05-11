@@ -107,6 +107,7 @@ export default class WithSandBox implements WithSandBoxInterface {
   private escapeKeys = new Set<PropertyKey>()
   // Properties newly added to microAppWindow
   private injectedKeys = new Set<PropertyKey>()
+  public type = 'with' as const
   public proxyWindow!: proxyWindow // Proxy
   public microAppWindow = {} as MicroAppWindowType // Proxy target
 

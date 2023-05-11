@@ -1,4 +1,5 @@
 import type {
+  IframeSandboxInterface,
   microAppWindowType,
   MicroLocation,
   SandBoxStartParams,
@@ -59,7 +60,7 @@ import {
   patchElementTree
 } from '../adapter'
 
-export default class IframeSandbox {
+export default class IframeSandbox implements IframeSandboxInterface {
   static activeCount = 0 // number of active sandbox
   private active = false
   private windowEffect!: CommonEffectHook
@@ -70,6 +71,7 @@ export default class IframeSandbox {
   // Properties escape to rawWindow, cleared when unmount
   private escapeKeys = new Set<PropertyKey>()
   public deleteIframeElement: () => void
+  public type = 'iframe' as const
   public iframe!: HTMLIFrameElement | null
   public sandboxReady!: Promise<void>
   public microAppWindow: microAppWindowType

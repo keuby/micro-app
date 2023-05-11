@@ -32,6 +32,11 @@ declare module '@micro-app/types' {
     args: any[],
   }
 
+  interface MicroLocation extends Location, URL {
+    fullPath: string
+    [key: string]: any
+  }
+
   interface CommonEffectHook {
     reset(): void
     record(): void
@@ -63,7 +68,7 @@ declare module '@micro-app/types' {
     destroy?: boolean,
   }
 
-  interface WithSandBoxInterface {
+  interface SandBoxBaseInterface {
     proxyWindow: WindowProxy
     microAppWindow: Window // Proxy target
     start (startParams: SandBoxStartParams): void
@@ -82,8 +87,24 @@ declare module '@micro-app/types' {
     markUmdMode(state: boolean): void
     patchStaticElement (container: Element | ShadowRoot): void
     actionBeforeExecScripts (container: Element | ShadowRoot): void
-    deleteIframeElement? (): void
   }
+
+  interface WithSandBoxInterface extends SandBoxBaseInterface {
+    type: 'with'
+  }
+
+  interface IframeSandboxInterface extends SandBoxBaseInterface {
+    type: 'iframe'
+    iframe: HTMLIFrameElement | null
+    sandboxReady: Promise<void>
+    proxyLocation: MicroLocation
+    baseElement: HTMLBaseElement
+    microHead: HTMLHeadElement
+    microBody: HTMLBodyElement
+    deleteIframeElement(): void
+  }
+
+  type SandBoxInterface = WithSandBoxInterface | IframeSandboxInterface;
 
   interface SandBoxAdapter {
     // Variables that can only assigned to rawWindow
@@ -360,11 +381,6 @@ declare module '@micro-app/types' {
 
   type PopStateListener = (this: Window, e: PopStateEvent) => void
   type MicroPopStateEvent = PopStateEvent & { onlyForBrowser?: boolean }
-
-  interface MicroLocation extends Location, URL {
-    fullPath: string
-    [key: string]: any
-  }
 
   type MicroHistory = ProxyHandler<History>
   type MicroState = any
