@@ -28,6 +28,7 @@ import globalEnv, { initGlobalEnv } from './libs/global_env'
 import { appInstanceMap } from './create_app'
 import { lifeCycles } from './constants'
 import { router } from './sandbox/router'
+import { pluginDriver } from './libs/plugin_driver'
 
 /**
  * if app not prefetch & not unmount, then app is active
@@ -321,6 +322,7 @@ export class MicroApp extends EventCenterForBaseApp implements MicroAppBaseType 
             }
           }
         }
+        pluginDriver.setPlugins(options.plugins)
       }
     }
 

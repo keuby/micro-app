@@ -17,9 +17,6 @@ import {
   defer,
   logError,
   isUndefined,
-  isPlainObject,
-  isArray,
-  isFunction,
   getAttributes,
   injectFiberTask,
   serialExecFiberTasks,
@@ -156,7 +153,7 @@ export function extractScriptElement (
   let replaceComment: Comment | null = null
   let src: string | null = script.getAttribute('src')
   if (src) src = CompletionPath(src, app.url)
-  if (script.hasAttribute('exclude') || checkExcludeUrl(src, app.name)) {
+  if (script.hasAttribute('exclude') || checkExcludeUrl(src, app)) {
     replaceComment = document.createComment('script element with exclude attribute removed by micro-app')
   } else if (
     (
@@ -164,7 +161,7 @@ export function extractScriptElement (
       !scriptTypes.includes(script.type)
     ) ||
     script.hasAttribute('ignore') ||
-    checkIgnoreUrl(src, app.name)
+    checkIgnoreUrl(src, app)
   ) {
     // 配置为忽略的脚本，清空 rawDocument.currentScript，避免被忽略的脚本内获取 currentScript 出错
     if (globalEnv.rawDocument?.currentScript) {
@@ -275,13 +272,8 @@ export function getAssetsPlugins (appName: string): plugins['global'] {
  * @param address css or js link
  * @param plugins microApp plugins
  */
-export function checkExcludeUrl (address: string | null, appName: string): boolean {
-  if (!address) return false
-  const plugins = getAssetsPlugins(appName) || []
-  return plugins.some(plugin => {
-    if (!plugin.excludeChecker) return false
-    return plugin.excludeChecker(address)
-  })
+export function checkExcludeUrl (address: string | null, app: AppInterface): boolean {
+  return address ? app.plugin.excludeChecker(address) : false
 }
 
 /**
@@ -289,13 +281,8 @@ export function checkExcludeUrl (address: string | null, appName: string): boole
  * @param address css or js link
  * @param plugins microApp plugins
  */
-export function checkIgnoreUrl (address: string | null, appName: string): boolean {
-  if (!address) return false
-  const plugins = getAssetsPlugins(appName) || []
-  return plugins.some(plugin => {
-    if (!plugin.ignoreChecker) return false
-    return plugin.ignoreChecker(address)
-  })
+export function checkIgnoreUrl (address: string | null, app: AppInterface): boolean {
+  return address ? app.plugin.ignoreChecker(address) : false
 }
 
 /**
@@ -662,9 +649,7 @@ function bindScope (
   scriptInfo: ScriptSourceInfo,
 ): string {
   // TODO: 1、cache 2、esm code is null
-  if (isPlainObject(microApp.options.plugins)) {
-    code = usePlugins(address, code, app.name, microApp.options.plugins)
-  }
+  code = app.plugin.loader(code, address)
 
   if (isWrapInSandBox(app, scriptInfo)) {
     return app.iframe ? `(function(window,self,global,location){;${code}\n${isInlineScript(address) ? '' : `//# sourceURL=${address}\n`}}).call(window.__MICRO_APP_SANDBOX__.proxyWindow,window.__MICRO_APP_SANDBOX__.proxyWindow,window.__MICRO_APP_SANDBOX__.proxyWindow,window.__MICRO_APP_SANDBOX__.proxyWindow,window.__MICRO_APP_SANDBOX__.proxyLocation);` : `;(function(proxyWindow){with(proxyWindow.__MICRO_APP_WINDOW__){(function(${globalKeyToBeCached}){;${code}\n${isInlineScript(address) ? '' : `//# sourceURL=${address}\n`}}).call(proxyWindow,${globalKeyToBeCached})}})(window.__MICRO_APP_PROXY_WINDOW__);`
@@ -687,31 +672,4 @@ function setActiveProxyWindow (app: AppInterface): void {
   if (app.sandBox) {
     globalEnv.rawWindow.__MICRO_APP_PROXY_WINDOW__ = app.sandBox.proxyWindow
   }
-}
-
-/**
- * Call the plugin to process the file
- * @param address script address
- * @param code code
- * @param appName app name
- * @param plugins plugin list
- */
-function usePlugins (address: string, code: string, appName: string, plugins: plugins): string {
-  const newCode = processCode(plugins.global, code, address)
-
-  return processCode(plugins.modules?.[appName], newCode, address)
-}
-
-function processCode (configs: plugins['global'], code: string, address: string) {
-  if (!isArray(configs)) {
-    return code
-  }
-
-  return configs.reduce((preCode, config) => {
-    if (isPlainObject(config) && isFunction(config.loader)) {
-      return config.loader(preCode, address)
-    }
-
-    return preCode
-  }, code)
 }

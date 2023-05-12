@@ -6,7 +6,6 @@ import type {
   CommonEffectHook,
   SandBoxStopParams,
   releaseGlobalEffectParams,
-  plugins,
 } from '@micro-app/types'
 import globalEnv from '../../libs/global_env'
 import bindFunctionToRawTarget from '../bind_function'
@@ -17,8 +16,6 @@ import {
   pureCreateElement,
   assign,
   clearDOM,
-  isPlainObject,
-  isArray,
   defer,
 } from '../../libs/utils'
 import {
@@ -59,6 +56,7 @@ import {
 import {
   patchElementTree
 } from '../adapter'
+import { pluginDriver } from '../../libs/plugin_driver'
 
 export default class IframeSandbox implements IframeSandboxInterface {
   static activeCount = 0 // number of active sandbox
@@ -475,23 +473,8 @@ export default class IframeSandbox implements IframeSandboxInterface {
    * @param appName app name
    */
   private getSpecialProperties (appName: string): void {
-    if (isPlainObject(microApp.options.plugins)) {
-      this.commonActionForSpecialProperties(microApp.options.plugins.global)
-      this.commonActionForSpecialProperties(microApp.options.plugins.modules?.[appName])
-    }
-  }
-
-  // common action for global plugins and module plugins
-  private commonActionForSpecialProperties (plugins: plugins['global']) {
-    if (isArray(plugins)) {
-      for (const plugin of plugins) {
-        if (isPlainObject(plugin)) {
-          if (isArray(plugin.escapeProperties)) {
-            this.escapeProperties = this.escapeProperties.concat(plugin.escapeProperties)
-          }
-        }
-      }
-    }
+    const plugin = pluginDriver.select(appName)
+    this.escapeProperties = this.escapeProperties.concat(plugin.escapeProperties)
   }
 
   private initRouteState (defaultPage: string): void {

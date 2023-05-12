@@ -162,6 +162,7 @@ function patchDocumentPrototype (appName: string, microAppWindow: microAppWindow
 }
 
 function patchDocumentProperties (
+  // @ts-expect-error
   appName: string,
   microAppWindow: microAppWindowType,
   proxyLocation: MicroLocation,

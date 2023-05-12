@@ -1,7 +1,6 @@
 import type {
   microAppWindowType,
   WithSandBoxInterface,
-  plugins,
   MicroLocation,
   SandBoxAdapter,
   SandBoxStartParams,
@@ -23,8 +22,6 @@ import {
 } from '../../libs/nest_app'
 import {
   getEffectivePath,
-  isArray,
-  isPlainObject,
   isString,
   isUndefined,
   removeDomScope,
@@ -66,6 +63,7 @@ import {
   useMicroEventSource,
   createMicroXMLHttpRequest,
 } from '../request'
+import { pluginDriver } from '../../libs/plugin_driver'
 
 // TODO: 放到global.d.ts
 export type MicroAppWindowDataType = {
@@ -364,27 +362,11 @@ export default class WithSandBox implements WithSandBoxInterface {
    * @param appName app name
    */
   private getSpecialProperties (appName: string): void {
-    this.scopeProperties = this.scopeProperties.concat(this.adapter.staticScopeProperties)
-    if (isPlainObject(microApp.options.plugins)) {
-      this.commonActionForSpecialProperties(microApp.options.plugins.global)
-      this.commonActionForSpecialProperties(microApp.options.plugins.modules?.[appName])
-    }
-  }
-
-  // common action for global plugins and module plugins
-  private commonActionForSpecialProperties (plugins: plugins['global']) {
-    if (isArray(plugins)) {
-      for (const plugin of plugins) {
-        if (isPlainObject(plugin)) {
-          if (isArray(plugin.scopeProperties)) {
-            this.scopeProperties = this.scopeProperties.concat(plugin.scopeProperties)
-          }
-          if (isArray(plugin.escapeProperties)) {
-            this.escapeProperties = this.escapeProperties.concat(plugin.escapeProperties)
-          }
-        }
-      }
-    }
+    const plugin = pluginDriver.select(appName)
+    this.scopeProperties = this.scopeProperties
+      .concat(this.adapter.staticScopeProperties)
+      .concat(plugin.scopeProperties)
+    this.escapeProperties = this.escapeProperties.concat(plugin.escapeProperties)
   }
 
   // create proxyWindow with Proxy(microAppWindow)

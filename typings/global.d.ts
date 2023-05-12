@@ -68,7 +68,8 @@ declare module '@micro-app/types' {
     destroy?: boolean,
   }
 
-  interface SandBoxBaseInterface {
+  interface SandBoxInterface {
+    type: string
     proxyWindow: WindowProxy
     microAppWindow: Window // Proxy target
     start (startParams: SandBoxStartParams): void
@@ -89,11 +90,11 @@ declare module '@micro-app/types' {
     actionBeforeExecScripts (container: Element | ShadowRoot): void
   }
 
-  interface WithSandBoxInterface extends SandBoxBaseInterface {
+  interface WithSandBoxInterface extends SandBoxInterface {
     type: 'with'
   }
 
-  interface IframeSandboxInterface extends SandBoxBaseInterface {
+  interface IframeSandboxInterface extends SandBoxInterface {
     type: 'iframe'
     iframe: HTMLIFrameElement | null
     sandboxReady: Promise<void>
@@ -104,7 +105,7 @@ declare module '@micro-app/types' {
     deleteIframeElement(): void
   }
 
-  type SandBoxInterface = WithSandBoxInterface | IframeSandboxInterface;
+  type BuiltinSandBox = WithSandBoxInterface | IframeSandboxInterface;
 
   interface SandBoxAdapter {
     // Variables that can only assigned to rawWindow
@@ -170,11 +171,43 @@ declare module '@micro-app/types' {
     unmountcb?: CallableFunction // callback of unmount
   }
 
+  type AssetsChecker = (url: string) => boolean;
+
+  type MicroAppPlugin = {
+    // Scoped global Properties
+    scopeProperties?: PropertyKey[]
+    // Properties that can be escape to rawWindow
+    escapeProperties?: PropertyKey[]
+    // Exclude JS or CSS
+    excludeChecker?: AssetsChecker
+    // Ignore JS or CSS
+    ignoreChecker?: AssetsChecker
+    // options for plugin as the third parameter of loader
+    options?: Record<string, unknown>
+    // handle function
+    loader?: (code: string, url: string) => string
+    // html processor
+    processHtml?: (code: string, url: string) => string
+    // sandBox processor
+    processSandbox?: (sandbox: BuiltinSandBox) => void
+  }
+
+  type plugins = {
+    // global plugin
+    global?: MicroAppPlugin[]
+
+    // plugin for special app
+    modules?: {
+      [name: string]: MicroAppPlugin[]
+    }
+  }
+
   // app instance
   interface AppInterface extends Pick<ParentNode, 'querySelector' | 'querySelectorAll'> {
     source: sourceType // source list
     // TODO: 去掉any
     sandBox: WithSandBoxInterface | null | any // sandbox
+    plugin: Required<MicroAppPlugin>
     name: string // app name
     url: string // app url
     scopecss: boolean // whether use css scoped, default is true
@@ -276,48 +309,6 @@ declare module '@micro-app/types' {
     beforeshow(e: CustomEvent): void
     aftershow(e: CustomEvent): void
     afterhidden(e: CustomEvent): void
-  }
-
-  type AssetsChecker = (url: string) => boolean;
-
-  type plugins = {
-    // global plugin
-    global?: Array<{
-      // Scoped global Properties
-      scopeProperties?: Array<PropertyKey>
-      // Properties that can be escape to rawWindow
-      escapeProperties?: Array<PropertyKey>
-      // Exclude JS or CSS
-      excludeChecker?: AssetsChecker
-      // Ignore JS or CSS
-      ignoreChecker?: AssetsChecker
-      // options for plugin as the third parameter of loader
-      options?: Record<string, unknown>
-      // handle function
-      loader?: (code: string, url: string) => string
-      // html processor
-      processHtml?: (code: string, url: string) => string
-    }>
-
-    // plugin for special app
-    modules?: {
-      [name: string]: Array<{
-        // Scoped global Properties
-        scopeProperties?: Array<PropertyKey>
-        // Properties that can be escape to rawWindow
-        escapeProperties?: Array<PropertyKey>
-        // Exclude JS or CSS
-        excludeChecker?: AssetsChecker
-        // Ignore JS or CSS
-        ignoreChecker?: AssetsChecker
-        // options for plugin as the third parameter of loader
-        options?: Record<string, unknown>
-        // handle function
-        loader?: (code: string, url: string) => string
-        // html processor
-        processHtml?: (code: string, url: string) => string
-      }>
-    }
   }
 
   type GetActiveAppsParam = {

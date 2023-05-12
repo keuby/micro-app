@@ -217,7 +217,12 @@ function patchIframeNode (
    */
 }
 
-function patchIframeAttribute (appName: string, url: string, microAppWindow: microAppWindowType): void {
+function patchIframeAttribute (
+  // @ts-expect-error
+  appName: string,
+  url: string,
+  microAppWindow: microAppWindowType
+): void {
   const microRootElement = microAppWindow.Element
   const rawMicroSetAttribute = microRootElement.prototype.setAttribute
 

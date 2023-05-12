@@ -4,7 +4,8 @@ import type {
   sourceType,
   MountParam,
   UnmountParam,
-  SandBoxInterface,
+  BuiltinSandBox,
+  MicroAppPlugin,
 } from '@micro-app/types'
 import { HTMLLoader } from './source/loader/html'
 import { extractSourceDom } from './source/index'
@@ -36,6 +37,7 @@ import dispatchLifecyclesEvent, {
 import globalEnv from './libs/global_env'
 import microApp from './micro_app'
 import sourceCenter from './source/source_center'
+import { pluginDriver } from './libs/plugin_driver'
 
 // micro app instances
 export const appInstanceMap = new Map<string, AppInterface>()
@@ -61,10 +63,10 @@ export default class CreateApp implements AppInterface {
   private umdHookMount: Func | null = null
   private umdHookUnmount: Func | null = null
   private preRenderEvents?: CallableFunction[] | null
+  public plugin: Required<MicroAppPlugin>
   public umdMode = false
   public source: sourceType
-  // TODO: 类型优化，加上iframe沙箱
-  public sandBox: SandBoxInterface | null = null
+  public sandBox: BuiltinSandBox | null = null
   public name: string
   public url: string
   public container: HTMLElement | ShadowRoot | null
@@ -99,6 +101,7 @@ export default class CreateApp implements AppInterface {
     this.scopecss = this.useSandbox && scopecss
     this.inline = inline ?? false
     this.iframe = iframe ?? false
+    this.plugin = pluginDriver.select(name)
 
     // not exist when prefetch 👇
     this.container = container ?? null
@@ -642,6 +645,7 @@ export default class CreateApp implements AppInterface {
       } else {
         this.sandBox = new WithSandBox(this.name, this.url)
       }
+      this.plugin.processSandbox(this.sandBox)
     }
   }
 

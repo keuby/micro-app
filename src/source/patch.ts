@@ -67,13 +67,13 @@ function handleNewNode (child: Node, app: AppInterface): Node {
     }
     return child
   } else if (isLinkElement(child)) {
-    if (child.hasAttribute('exclude') || checkExcludeUrl(child.getAttribute('href'), app.name)) {
+    if (child.hasAttribute('exclude') || checkExcludeUrl(child.getAttribute('href'), app)) {
       const linkReplaceComment = document.createComment('link element with exclude attribute ignored by micro-app')
       dynamicElementInMicroAppMap.set(child, linkReplaceComment)
       return linkReplaceComment
     } else if (
       child.hasAttribute('ignore') ||
-      checkIgnoreUrl(child.getAttribute('href'), app.name) ||
+      checkIgnoreUrl(child.getAttribute('href'), app) ||
       (
         child.href &&
         isFunction(microApp.options.excludeAssetFilter) &&

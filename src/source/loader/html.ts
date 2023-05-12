@@ -1,7 +1,6 @@
-import { AppInterface, plugins } from '@micro-app/types'
+import { AppInterface } from '@micro-app/types'
 import { fetchSource } from '../fetch'
-import { isFunction, isPlainObject, logError } from '../../libs/utils'
-import microApp from '../../micro_app'
+import { logError } from '../../libs/utils'
 
 export interface IHTMLLoader {
   run (app: AppInterface, successCb: CallableFunction): void
@@ -31,7 +30,7 @@ export class HTMLLoader implements IHTMLLoader {
         return logError(msg, appName)
       }
 
-      htmlStr = this.formatHTML(htmlUrl, htmlStr, appName)
+      htmlStr = this.formatHTML(htmlUrl, htmlStr, app)
 
       successCb(htmlStr, app)
     }).catch((e) => {
@@ -40,8 +39,8 @@ export class HTMLLoader implements IHTMLLoader {
     })
   }
 
-  private formatHTML (htmlUrl: string, htmlStr: string, appName: string) {
-    return this.processHtml(htmlUrl, htmlStr, appName, microApp.options.plugins)
+  private formatHTML (htmlUrl: string, htmlStr: string, app: AppInterface) {
+    return app.plugin.processHtml(htmlStr, htmlUrl)
       .replace(/<head[^>]*>[\s\S]*?<\/head>/i, (match) => {
         return match
           .replace(/<head/i, '<micro-app-head')
@@ -52,23 +51,5 @@ export class HTMLLoader implements IHTMLLoader {
           .replace(/<body/i, '<micro-app-body')
           .replace(/<\/body>/i, '</micro-app-body>')
       })
-  }
-
-  private processHtml (url: string, code: string, appName: string, plugins: plugins | void): string {
-    if (!plugins) return code
-
-    const mergedPlugins: NonNullable<plugins['global']> = []
-    plugins.global && mergedPlugins.push(...plugins.global)
-    plugins.modules?.[appName] && mergedPlugins.push(...plugins.modules[appName])
-
-    if (mergedPlugins.length > 0) {
-      return mergedPlugins.reduce((preCode, plugin) => {
-        if (isPlainObject(plugin) && isFunction(plugin.processHtml)) {
-          return plugin.processHtml!(preCode, url)
-        }
-        return preCode
-      }, code)
-    }
-    return code
   }
 }

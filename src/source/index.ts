@@ -47,9 +47,9 @@ function flatChildren (
 
   for (const dom of children) {
     if (isLinkElement(dom)) {
-      if (dom.hasAttribute('exclude') || checkExcludeUrl(dom.getAttribute('href'), app.name)) {
+      if (dom.hasAttribute('exclude') || checkExcludeUrl(dom.getAttribute('href'), app)) {
         parent.replaceChild(document.createComment('link element with exclude attribute ignored by micro-app'), dom)
-      } else if (!(dom.hasAttribute('ignore') || checkIgnoreUrl(dom.getAttribute('href'), app.name))) {
+      } else if (!(dom.hasAttribute('ignore') || checkIgnoreUrl(dom.getAttribute('href'), app))) {
         extractLinkFromHtml(dom, parent, app)
       } else if (dom.hasAttribute('href')) {
         globalEnv.rawSetAttribute.call(dom, 'href', CompletionPath(dom.getAttribute('href')!, app.url))
