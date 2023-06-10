@@ -18,6 +18,7 @@ import {
   isPromise,
   logError,
   getRootContainer,
+  removeDomScope,
 } from './libs/utils'
 import dispatchLifecyclesEvent, { dispatchCustomEventToMicroApp } from './interact/lifecycles_event'
 import globalEnv from './libs/global_env'
@@ -210,6 +211,7 @@ export default class CreateApp implements AppInterface {
       umdHookMountResult
         .then(() => this.dispatchMountedEvent())
         .catch((e: Error) => this.onerror(e))
+      removeDomScope()
     } else {
       this.dispatchMountedEvent()
     }

@@ -1,6 +1,6 @@
 {
   "name": "@micro-zoe/micro-app",
-  "version": "0.8.11-beta.1",
+  "version": "0.8.11-beta.2",
   "description": "A lightweight, efficient and powerful micro front-end framework",
   "private": false,
   "main": "lib/index.min.js",
@@ -45,8 +45,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:unit": "jest src/__tests__/unit",
-    "test:unit:coverage": "npm run test:unit -- --coverage",
-    "prepublishOnly": "yarn lint && yarn test && yarn build"
+    "test:unit:coverage": "npm run test:unit -- --coverage"
   },
   "repository": {
     "type": "git",
