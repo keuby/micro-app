@@ -31,6 +31,7 @@ import {
   pureCreateElement,
   isDivElement,
   removeDomScope,
+  isShadowRoot,
 } from './libs/utils'
 import dispatchLifecyclesEvent, {
   dispatchCustomEventToMicroApp,
@@ -783,11 +784,21 @@ export default class CreateApp implements AppInterface {
   }
 
   public querySelector (selectors: string): Node | null {
-    return this.container ? globalEnv.rawElementQuerySelector.call(this.container, selectors) : null
+    if (this.container) {
+      return isShadowRoot(this.container)
+        ? this.container.querySelector(selectors)
+        : globalEnv.rawElementQuerySelector.call(this.container, selectors)
+    }
+    return null
   }
 
   public querySelectorAll (selectors: string): NodeListOf<Node> {
-    return this.container ? globalEnv.rawElementQuerySelectorAll.call(this.container, selectors) : []
+    if (this.container) {
+      return isShadowRoot(this.container)
+        ? this.container.querySelectorAll(selectors)
+        : globalEnv.rawElementQuerySelectorAll.call(this.container, selectors)
+    }
+    return pureCreateElement('div').childNodes
   }
 
   /**
