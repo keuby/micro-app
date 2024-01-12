@@ -30,6 +30,7 @@ import {
   pureCreateElement,
   isDivElement,
   removeDomScope,
+  formatAppURL,
 } from './libs/utils'
 import dispatchLifecyclesEvent, {
   dispatchCustomEventToMicroApp,
@@ -98,7 +99,7 @@ export default class CreateApp implements AppInterface {
     appInstanceMap.set(name, this)
     // init actions
     this.name = name
-    this.url = url
+    this.url = formatAppURL(url)
     this.useSandbox = useSandbox
     this.scopecss = this.useSandbox && scopecss
     // exec before getInlineModeState
@@ -112,7 +113,7 @@ export default class CreateApp implements AppInterface {
 
     // not exist when prefetch 👇
     this.container = container ?? null
-    this.ssrUrl = ssrUrl ?? ''
+    this.ssrUrl = ssrUrl ? formatAppURL(ssrUrl) : ''
 
     // exist only prefetch 👇
     this.isPrefetch = isPrefetch ?? false
